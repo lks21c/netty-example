@@ -2,6 +2,8 @@ package kch6;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.charset.Charset;
+
 import org.junit.Test;
 
 import io.netty.buffer.ByteBuf;
@@ -11,7 +13,7 @@ import io.netty.buffer.Unpooled;
 /**
  * Created by lks21c on 15. 8. 25.
  */
-public class NettyByteBufferTest {
+public class NettyDynamicByteBufferTest {
 
 	@Test
 	public void test1() throws Exception {
@@ -41,19 +43,24 @@ public class NettyByteBufferTest {
 		assertEquals(11, buf.capacity());
 		assertEquals(isDirect, buf.isDirect());
 
-		buf.writeInt(65537);
-		assertEquals(4, buf.readableBytes());
-		assertEquals(7, buf.writableBytes());
+		String sourceData = "hello world";
+		buf.writeBytes(sourceData.getBytes());
+		assertEquals(11, buf.readableBytes());
+		assertEquals(0, buf.writableBytes());
 
-		assertEquals(1, buf.readShort());
-		assertEquals(2, buf.readableBytes());
-		assertEquals(7, buf.writableBytes());
+		assertEquals(sourceData, buf.toString(Charset.defaultCharset()));
 
-		assertEquals(true, buf.isReadable());
+		buf.capacity(6);
+		assertEquals("hello ", buf.toString(Charset.defaultCharset()));
+		assertEquals(6, buf.capacity());
 
-		buf.clear();
+		buf.capacity(13);
+		assertEquals("hello ", buf.toString(Charset.defaultCharset()));
 
-		assertEquals(0, buf.readableBytes());
-		assertEquals(11, buf.writableBytes());
+		buf.writeBytes("world".getBytes());
+		assertEquals(sourceData, buf.toString(Charset.defaultCharset()));
+
+		assertEquals(13, buf.capacity());
+		assertEquals(2, buf.writableBytes());
 	}
 }
